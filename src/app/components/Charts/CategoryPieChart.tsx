@@ -48,15 +48,11 @@ export default function CategoryPieChart() {
           return;
         }
 
-        const grouped: { [category: string]: number } = {};
+        const grouped: Record<string, number> = {};
         
         transactions.forEach((t) => {
-          try {
-            const category = t.category || 'Uncategorized';
-            grouped[category] = (grouped[category] || 0) + t.amount;
-          } catch (e) {
-            console.error('Error processing transaction:', t, e);
-          }
+          const category = t.category || 'Uncategorized';
+          grouped[category] = (grouped[category] || 0) + t.amount;
         });
 
         const chartData = Object.entries(grouped)
@@ -113,9 +109,7 @@ export default function CategoryPieChart() {
     </div>
   );
 
-  const calculatePercentage = (value: number, total: number) => {
-    return total > 0 ? ((value / total) * 100).toFixed(1) : '0';
-  };
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-sm overflow-hidden">
@@ -151,7 +145,7 @@ export default function CategoryPieChart() {
                 animationBegin={100}
                 animationDuration={1000}
                 animationEasing="ease-out"
-                label={({ name, percent, index }) => (
+                label={({ percent, index }) => (
                   activeIndex === index || activeIndex === null ? (
                     <text 
                       x={0} 
@@ -169,7 +163,7 @@ export default function CategoryPieChart() {
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
               >
-                {data.map((entry, index) => (
+                {data.map((_, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={`url(#gradient-${index % COLORS.length})`}
@@ -192,10 +186,9 @@ export default function CategoryPieChart() {
                   padding: '0.75rem 1rem'
                 }}
                 formatter={(value: number, name: string) => {
-                    const total = data.reduce((sum, item) => sum + item.value, 0);
-                    const percent = calculatePercentage(value, total);
+                    const percent = ((Number(value) / totalValue) * 100).toFixed(1);
                     return [
-                      `₹${value.toFixed(2)}`,
+                      `₹${Number(value).toFixed(2)}`,
                       `${name} (${percent}%)`
                     ];
                   }}
@@ -209,7 +202,7 @@ export default function CategoryPieChart() {
                 verticalAlign="bottom"
                 align="center"
                 wrapperStyle={{ paddingTop: '20px' }}
-                formatter={(value, entry, index) => (
+                formatter={(value) => (
                   <span className="text-xs text-gray-600">
                     {value}
                   </span>

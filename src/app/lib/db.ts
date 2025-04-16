@@ -18,22 +18,33 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-let cached: MongooseCache;
+// Initialize cached with global mongoose or create new cache object
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
+// Assign back to global if it wasn't set
 if (!global.mongoose) {
-  global.mongoose = { conn: null, promise: null };
+  global.mongoose = cached;
 }
 
-cached = global.mongoose;
-
 async function dbConnect(): Promise<typeof mongoose> {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI);
+  if (cached.conn) {
+    return cached.conn;
   }
 
-  cached.conn = await cached.promise;
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+    cached.promise = mongoose.connect(MONGODB_URI, opts);
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+
   return cached.conn;
 }
 

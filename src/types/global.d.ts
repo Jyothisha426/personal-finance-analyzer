@@ -1,9 +1,9 @@
-// src/types/global.d.ts
-import mongoose from 'mongoose';
-
 declare global {
-  var mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
-  };
-}
+    interface MongooseCache {
+      conn: mongoose.Connection | null;
+      promise: Promise<mongoose.Connection> | null;
+    }
+    
+    // Use let instead of var for modern JavaScript
+    let mongoose: MongooseCache | undefined;
+  }

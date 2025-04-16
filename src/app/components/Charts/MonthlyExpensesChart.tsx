@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface Transaction {
   _id: string;
   amount: number;
   date: string | Date;
-  // other fields...
 }
 
 export default function MonthlyExpensesChart() {
@@ -32,19 +31,15 @@ export default function MonthlyExpensesChart() {
           return;
         }
 
-        const grouped: { [month: string]: number } = {};
+        const grouped: Record<string, number> = {};
         
         transactions.forEach((t) => {
-          try {
-            const date = typeof t.date === 'string' ? new Date(t.date) : t.date;
-            const month = date.toLocaleString('default', { 
-              month: 'short', 
-              year: 'numeric' 
-            });
-            grouped[month] = (grouped[month] || 0) + t.amount;
-          } catch (e) {
-            console.error('Error processing transaction:', t, e);
-          }
+          const date = typeof t.date === 'string' ? new Date(t.date) : t.date;
+          const month = date.toLocaleString('default', { 
+            month: 'short', 
+            year: 'numeric' 
+          });
+          grouped[month] = (grouped[month] || 0) + t.amount;
         });
 
         const chartData = Object.entries(grouped)
@@ -145,7 +140,7 @@ export default function MonthlyExpensesChart() {
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                   padding: '0.5rem 1rem'
                 }}
-                formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Total']}
+                formatter={(value: number) => [`₹${Number(value).toFixed(2)}`, 'Total']}
                 labelFormatter={(label) => `Month: ${label}`}
                 itemStyle={{ color: '#6366F1' }}
                 labelStyle={{ fontWeight: 'bold', color: '#1E293B' }}
